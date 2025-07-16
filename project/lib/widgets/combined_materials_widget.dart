@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/window_provider.dart';
+import 'package:get/get.dart';
+import '../controllers/window_controller.dart';
 import '../models/window_project.dart';
 
 class CombinedMaterial {
@@ -37,9 +37,9 @@ class _CombinedMaterialsWidgetState extends State<CombinedMaterialsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<WindowProvider>(
-      builder: (context, provider, child) {
-        final calculatedWindows = provider.windows.where((w) => w.breakdown != null).toList();
+    return GetBuilder<WindowController>(
+      builder: (controller) {
+        final calculatedWindows = controller.windows.where((w) => w.breakdown != null).toList();
         
         if (calculatedWindows.isEmpty) {
           return _buildEmptyState(context);

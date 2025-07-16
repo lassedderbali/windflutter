@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/window_provider.dart';
+import 'package:get/get.dart';
+import '../controllers/window_controller.dart';
 import 'window_input_form.dart';
 import 'window_list_panel.dart';
 import 'cost_breakdown_widget.dart';
@@ -11,8 +11,8 @@ class WindowCalculatorTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<WindowProvider>(
-      builder: (context, provider, child) {
+    return GetBuilder<WindowController>(
+      builder: (controller) {
         return Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -58,13 +58,13 @@ class WindowCalculatorTab extends StatelessWidget {
                         ],
                       ),
                     ),
-                    if (provider.windows.length > 1) ...[
+                    if (controller.windows.length > 1) ...[
                       const SizedBox(width: 16),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            '${provider.totalCost.toStringAsFixed(2)} د.ت',
+                            '${controller.totalCost.toStringAsFixed(2)} د.ت',
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -107,8 +107,8 @@ class WindowCalculatorTab extends StatelessWidget {
                         'single',
                         'نافذة واحدة',
                         Icons.window,
-                        provider.viewMode == 'single',
-                        () => provider.setViewMode('single'),
+                        controller.viewMode == 'single',
+                        () => controller.setViewMode('single'),
                       ),
                     ),
                     Expanded(
@@ -117,8 +117,8 @@ class WindowCalculatorTab extends StatelessWidget {
                         'multiple',
                         'نوافذ متعددة',
                         Icons.view_list,
-                        provider.viewMode == 'multiple',
-                        () => provider.setViewMode('multiple'),
+                        controller.viewMode == 'multiple',
+                        () => controller.setViewMode('multiple'),
                       ),
                     ),
                     Expanded(
@@ -127,9 +127,9 @@ class WindowCalculatorTab extends StatelessWidget {
                         'combined',
                         'قائمة السلع',
                         Icons.shopping_cart,
-                        provider.viewMode == 'combined',
-                        () => provider.setViewMode('combined'),
-                        enabled: provider.calculatedWindows > 0,
+                        controller.viewMode == 'combined',
+                        () => controller.setViewMode('combined'),
+                        enabled: controller.calculatedWindows > 0,
                       ),
                     ),
                   ],
@@ -140,7 +140,7 @@ class WindowCalculatorTab extends StatelessWidget {
 
               // Content
               Expanded(
-                child: provider.viewMode == 'combined'
+                child: controller.viewMode == 'combined'
                     ? const CombinedMaterialsWidget()
                     : Row(
                         children: [
@@ -162,7 +162,7 @@ class WindowCalculatorTab extends StatelessWidget {
                                 const SizedBox(width: 16),
                                 // Results
                                 Expanded(
-                                  child: _buildResultsPanel(context, provider),
+                                  child: _buildResultsPanel(context, controller),
                                 ),
                               ],
                             ),
@@ -221,20 +221,20 @@ class WindowCalculatorTab extends StatelessWidget {
     );
   }
 
-  Widget _buildResultsPanel(BuildContext context, WindowProvider provider) {
-    if (provider.viewMode == 'multiple' && provider.calculatedWindows > 0) {
-      return _buildMultipleWindowsResults(context, provider);
-    } else if (provider.activeWindow?.breakdown != null && provider.viewMode == 'single') {
+  Widget _buildResultsPanel(BuildContext context, WindowController controller) {
+    if (controller.viewMode == 'multiple' && controller.calculatedWindows > 0) {
+      return _buildMultipleWindowsResults(context, controller);
+    } else if (controller.activeWindow?.breakdown != null && controller.viewMode == 'single') {
       return CostBreakdownWidget(
-        breakdown: provider.activeWindow!.breakdown!,
-        specs: provider.activeWindow!.specs,
+        breakdown: controller.activeWindow!.breakdown!,
+        specs: controller.activeWindow!.specs,
       );
     } else {
-      return _buildEmptyState(context, provider);
+      return _buildEmptyState(context, controller);
     }
   }
 
-  Widget _buildMultipleWindowsResults(BuildContext context, WindowProvider provider) {
+  Widget _buildMultipleWindowsResults(BuildContext context, WindowController controller) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -260,9 +260,9 @@ class WindowCalculatorTab extends StatelessWidget {
           const SizedBox(height: 16),
           Expanded(
             child: ListView.builder(
-              itemCount: provider.windows.where((w) => w.breakdown != null).length,
+              itemCount: controller.windows.where((w) => w.breakdown != null).length,
               itemBuilder: (context, index) {
-                final window = provider.windows.where((w) => w.breakdown != null).toList()[index];
+                final window = controller.windows.where((w) => w.breakdown != null).toList()[index];
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(16),
@@ -327,7 +327,7 @@ class WindowCalculatorTab extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${provider.totalCost.toStringAsFixed(2)} د.ت',
+                  '${controller.totalCost.toStringAsFixed(2)} د.ت',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: Colors.green.shade600,
                     fontWeight: FontWeight.bold,
@@ -341,7 +341,7 @@ class WindowCalculatorTab extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, WindowProvider provider) {
+  Widget _buildEmptyState(BuildContext context, WindowController controller) {
     return Container(
       padding: const EdgeInsets.all(48),
       decoration: BoxDecoration(
@@ -365,7 +365,7 @@ class WindowCalculatorTab extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            provider.windows.length > 1 ? 'احسب النوافذ' : 'أدخل مواصفات النافذة',
+            controller.windows.length > 1 ? 'احسب النوافذ' : 'أدخل مواصفات النافذة',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.grey.shade900,
@@ -373,7 +373,7 @@ class WindowCalculatorTab extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            provider.windows.length > 1
+            controller.windows.length > 1
                 ? 'اضغط على "احسب السلع المجمعة" لحساب قائمة السلع الموحدة أو "احسب هذه النافذة" لحساب النافذة المحددة'
                 : 'قم بإدخال أبعاد النافذة والمواصفات المطلوبة ثم اضغط على "احسب التكلفة"',
             textAlign: TextAlign.center,

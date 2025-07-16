@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/window_provider.dart';
+import 'package:get/get.dart';
+import '../controllers/window_controller.dart';
 
 class WindowListPanel extends StatelessWidget {
   const WindowListPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<WindowProvider>(
-      builder: (context, provider, child) {
+    return GetBuilder<WindowController>(
+      builder: (controller) {
         return Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
@@ -42,7 +42,7 @@ class WindowListPanel extends StatelessWidget {
                   ),
                   const Spacer(),
                   IconButton(
-                    onPressed: provider.addWindow,
+                    onPressed: controller.addWindow,
                     icon: Icon(
                       Icons.add,
                       color: Colors.blue.shade600,
@@ -61,10 +61,10 @@ class WindowListPanel extends StatelessWidget {
               // Windows List
               Expanded(
                 child: ListView.builder(
-                  itemCount: provider.windows.length,
+                  itemCount: controller.windows.length,
                   itemBuilder: (context, index) {
-                    final window = provider.windows[index];
-                    final isActive = window.id == provider.activeWindowId;
+                    final window = controller.windows[index];
+                    final isActive = window.id == controller.activeWindowId;
                     
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
@@ -77,7 +77,7 @@ class WindowListPanel extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
-                        onTap: () => provider.setActiveWindow(window.id),
+                        onTap: () => controller.setActiveWindow(window.id),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         title: TextFormField(
                           initialValue: window.name,
@@ -88,8 +88,8 @@ class WindowListPanel extends StatelessWidget {
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.zero,
                           ),
-                          onChanged: (value) => provider.updateWindowName(window.id, value),
-                          onTap: () => provider.setActiveWindow(window.id),
+                          onChanged: (value) => controller.updateWindowName(window.id, value),
+                          onTap: () => controller.setActiveWindow(window.id),
                         ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,17 +117,17 @@ class WindowListPanel extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              onPressed: () => provider.duplicateWindow(window.id),
+                              onPressed: () => controller.duplicateWindow(window.id),
                               icon: const Icon(Icons.copy, size: 16),
                               style: IconButton.styleFrom(
                                 backgroundColor: Colors.grey.shade100,
                                 minimumSize: const Size(32, 32),
                               ),
                             ),
-                            if (provider.windows.length > 1) ...[
+                            if (controller.windows.length > 1) ...[
                               const SizedBox(width: 4),
                               IconButton(
-                                onPressed: () => provider.removeWindow(window.id),
+                                onPressed: () => controller.removeWindow(window.id),
                                 icon: const Icon(Icons.close, size: 16),
                                 style: IconButton.styleFrom(
                                   backgroundColor: Colors.red.shade50,
@@ -152,7 +152,7 @@ class WindowListPanel extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: provider.isCalculating ? null : provider.calculateAllWindows,
+                      onPressed: controller.isCalculating ? null : controller.calculateAllWindows,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green.shade600,
                         foregroundColor: Colors.white,
@@ -161,7 +161,7 @@ class WindowListPanel extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: provider.isCalculating
+                      child: controller.isCalculating
                           ? Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -192,7 +192,7 @@ class WindowListPanel extends StatelessWidget {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: provider.calculatedWindows == 0 ? null : () {
+                          onPressed: controller.calculatedWindows == 0 ? null : () {
                             // Export functionality
                           },
                           style: OutlinedButton.styleFrom(
@@ -214,7 +214,7 @@ class WindowListPanel extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: provider.resetWindows,
+                          onPressed: controller.resetWindows,
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             shape: RoundedRectangleBorder(

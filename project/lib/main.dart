@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'providers/window_provider.dart';
+import 'package:get/get.dart';
+import 'controllers/window_controller.dart';
 import 'screens/home_screen.dart';
 
 void main() {
+  Get.put(WindowController());
   runApp(const WindowCalculatorApp());
 }
 
@@ -12,9 +13,7 @@ class WindowCalculatorApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => WindowProvider(),
-      child: MaterialApp(
+    return GetMaterialApp(
         title: 'نظام حساب تكلفة النوافذ',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
@@ -48,7 +47,6 @@ class WindowCalculatorApp extends StatelessWidget {
           ),
         ),
         home: const HomeScreen(),
-      ),
     );
   }
 }

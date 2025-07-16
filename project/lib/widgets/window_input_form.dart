@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/window_provider.dart';
+import 'package:get/get.dart';
+import '../controllers/window_controller.dart';
 
 class WindowInputForm extends StatelessWidget {
   const WindowInputForm({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<WindowProvider>(
-      builder: (context, provider, child) {
-        final activeWindow = provider.activeWindow;
+    return GetBuilder<WindowController>(
+      builder: (controller) {
+        final activeWindow = controller.activeWindow;
         if (activeWindow == null) return const SizedBox();
 
         return Container(
@@ -55,7 +55,7 @@ class WindowInputForm extends StatelessWidget {
                       context,
                       'الطول (سم)',
                       activeWindow.specs.length,
-                      (value) => provider.updateWindowSpecs(
+                      (value) => controller.updateWindowSpecs(
                         activeWindow.specs.copyWith(length: value),
                       ),
                     ),
@@ -66,7 +66,7 @@ class WindowInputForm extends StatelessWidget {
                       context,
                       'العرض (سم)',
                       activeWindow.specs.width,
-                      (value) => provider.updateWindowSpecs(
+                      (value) => controller.updateWindowSpecs(
                         activeWindow.specs.copyWith(width: value),
                       ),
                     ),
@@ -108,11 +108,11 @@ class WindowInputForm extends StatelessWidget {
                       context,
                       'اختر اللون',
                       activeWindow.specs.color,
-                      provider.colorOptions.map((color) => DropdownMenuItem(
+                      controller.colorOptions.map((color) => DropdownMenuItem(
                         value: color['value'],
                         child: Text(color['label']!),
                       )).toList(),
-                      (value) => _handleColorChange(provider, activeWindow, value!),
+                      (value) => _handleColorChange(controller, activeWindow, value!),
                     ),
                   ],
                 ),
@@ -126,11 +126,11 @@ class WindowInputForm extends StatelessWidget {
                 context,
                 'نوع القفص',
                 activeWindow.specs.frameType,
-                provider.getFrameOptions(activeWindow.specs.color).map((option) => DropdownMenuItem(
+                controller.getFrameOptions(activeWindow.specs.color).map((option) => DropdownMenuItem(
                   value: option['value'],
                   child: Text('40100 ${option['label']}'),
                 )).toList(),
-                (value) => provider.updateWindowSpecs(
+                (value) => controller.updateWindowSpecs(
                   activeWindow.specs.copyWith(frameType: value),
                 ),
               ),
@@ -143,22 +143,22 @@ class WindowInputForm extends StatelessWidget {
                 context,
                 'نوع الفردة الرئيسي',
                 activeWindow.specs.sashType,
-                provider.getSashOptions(activeWindow.specs.color).map((option) => DropdownMenuItem(
+                controller.getSashOptions(activeWindow.specs.color).map((option) => DropdownMenuItem(
                   value: option['value'],
                   child: Text(option['label']),
                 )).toList(),
-                (value) => _handleSashTypeChange(provider, activeWindow, value!),
+                (value) => _handleSashTypeChange(controller, activeWindow, value!),
               ),
               const SizedBox(height: 12),
               _buildDropdownField(
                 context,
                 'نوع الفردة التفصيلي',
                 activeWindow.specs.sashSubType,
-                _getSashSubTypes(provider, activeWindow).map((type) => DropdownMenuItem(
+                _getSashSubTypes(controller, activeWindow).map((type) => DropdownMenuItem(
                   value: type['value'],
                   child: Text('${activeWindow.specs.sashType} ${type['label']}'),
                 )).toList(),
-                (value) => provider.updateWindowSpecs(
+                (value) => controller.updateWindowSpecs(
                   activeWindow.specs.copyWith(sashSubType: value),
                 ),
               ),
@@ -174,7 +174,7 @@ class WindowInputForm extends StatelessWidget {
                   DropdownMenuItem(value: 'double', child: Text('زجاج مزدوج')),
                   DropdownMenuItem(value: 'tempered', child: Text('زجاج مقوى')),
                 ],
-                (value) => provider.updateWindowSpecs(
+                (value) => controller.updateWindowSpecs(
                   activeWindow.specs.copyWith(glassType: value),
                 ),
               ),
@@ -184,7 +184,7 @@ class WindowInputForm extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: provider.isCalculating ? null : provider.calculateSingleWindow,
+                  onPressed: controller.isCalculating ? null : controller.calculateSingleWindow,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade600,
                     foregroundColor: Colors.white,
@@ -194,7 +194,7 @@ class WindowInputForm extends StatelessWidget {
                     ),
                     elevation: 2,
                   ),
-                  child: provider.isCalculating
+                  child: controller.isCalculating
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -313,9 +313,9 @@ class WindowInputForm extends StatelessWidget {
     );
   }
 
-  void _handleColorChange(WindowProvider provider, activeWindow, String newColor) {
-    final frameOptions = provider.getFrameOptions(newColor);
-    final sashOptions = provider.getSashOptions(newColor);
+  void _handleColorChange(WindowController controller, activeWindow, String newColor) {
+    final frameOptions = controller.getFrameOptions(newColor);
+    final sashOptions = controller.getSashOptions(newColor);
     
     final firstFrameOption = frameOptions.isNotEmpty ? frameOptions.first : null;
     final firstSashOption = sashOptions.isNotEmpty ? sashOptions.first : null;
@@ -323,7 +323,7 @@ class WindowInputForm extends StatelessWidget {
         (firstSashOption['types'] as List).isNotEmpty 
         ? (firstSashOption['types'] as List).first : null;
 
-    provider.updateWindowSpecs(activeWindow.specs.copyWith(
+    controller.updateWindowSpecs(activeWindow.specs.copyWith(
       color: newColor,
       frameType: firstFrameOption?['value'] ?? 'eurosist',
       sashType: firstSashOption?['value'] ?? '6007',
@@ -331,8 +331,8 @@ class WindowInputForm extends StatelessWidget {
     ));
   }
 
-  void _handleSashTypeChange(WindowProvider provider, activeWindow, String newSashType) {
-    final sashOptions = provider.getSashOptions(activeWindow.specs.color);
+  void _handleSashTypeChange(WindowController controller, activeWindow, String newSashType) {
+    final sashOptions = controller.getSashOptions(activeWindow.specs.color);
     final sashOption = sashOptions.firstWhere(
       (opt) => opt['value'] == newSashType,
       orElse: () => sashOptions.first,
@@ -340,14 +340,14 @@ class WindowInputForm extends StatelessWidget {
     final firstType = (sashOption['types'] as List).isNotEmpty 
         ? (sashOption['types'] as List).first : null;
     
-    provider.updateWindowSpecs(activeWindow.specs.copyWith(
+    controller.updateWindowSpecs(activeWindow.specs.copyWith(
       sashType: newSashType,
       sashSubType: firstType?['value'] ?? 'inoforme',
     ));
   }
 
-  List<Map<String, dynamic>> _getSashSubTypes(WindowProvider provider, activeWindow) {
-    final sashOptions = provider.getSashOptions(activeWindow.specs.color);
+  List<Map<String, dynamic>> _getSashSubTypes(WindowController controller, activeWindow) {
+    final sashOptions = controller.getSashOptions(activeWindow.specs.color);
     final sashOption = sashOptions.firstWhere(
       (opt) => opt['value'] == activeWindow.specs.sashType,
       orElse: () => sashOptions.first,
